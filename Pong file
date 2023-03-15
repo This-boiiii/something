@@ -1,0 +1,82 @@
+import pygame
+import random
+
+# Initialize Pygame
+pygame.init()
+
+# Set up the game window
+window_width = 800
+window_height = 600
+window = pygame.display.set_mode((window_width, window_height))
+pygame.display.set_caption("Pong")
+
+# Set up the paddles and ball
+paddle_width = 20
+paddle_height = 100
+paddle_speed = 5
+ball_size = 20
+ball_speed = 5
+paddle1 = pygame.Rect(50, window_height/2 - paddle_height/2, paddle_width, paddle_height)
+paddle2 = pygame.Rect(window_width - 50 - paddle_width, window_height/2 - paddle_height/2, paddle_width, paddle_height)
+ball = pygame.Rect(window_width/2 - ball_size/2, window_height/2 - ball_size/2, ball_size, ball_size)
+
+# Set up the score
+score_font = pygame.font.Font(None, 50)
+player1_score = 0
+player2_score = 0
+
+# Set up the game loop
+running = True
+while running:
+    # Handle events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    
+    # Move the paddles
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_w] and paddle1.top > 0:
+        paddle1.move_ip(0, -paddle_speed)
+    if keys[pygame.K_s] and paddle1.bottom < window_height:
+        paddle1.move_ip(0, paddle_speed)
+    if keys[pygame.K_UP] and paddle2.top > 0:
+        paddle2.move_ip(0, -paddle_speed)
+    if keys[pygame.K_DOWN] and paddle2.bottom < window_height:
+        paddle2.move_ip(0, paddle_speed)
+    
+    # Move the ball
+    ball.move_ip(ball_speed, 0)
+    if ball.right > window_width:
+        ball_speed = -ball_speed
+        player1_score += 1
+        ball.center = (window_width/2, window_height/2)
+    if ball.left < 0:
+        ball_speed = -ball_speed
+        player2_score += 1
+        ball.center = (window_width/2, window_height/2)
+    if ball.top < 0 or ball.bottom > window_height:
+        ball_speed = -ball_speed
+    
+    # Check for collisions
+    if ball.colliderect(paddle1) or ball.colliderect(paddle2):
+        ball_speed = -ball_speed + random.uniform(-1, 1)
+    
+    # Clear the screen
+    window.fill((0, 0, 0))
+    
+    # Draw the paddles and ball
+    pygame.draw.rect(window, (255, 255, 255), paddle1)
+    pygame.draw.rect(window, (255, 255, 255), paddle2)
+    pygame.draw.ellipse(window, (255, 255, 255), ball)
+    
+    # Draw the score
+    player1_text = score_font.render(str(player1_score), True, (255, 255, 255))
+    player2_text = score_font.render(str(player2_score), True, (255, 255, 255))
+    window.blit(player1_text, (window_width/4 - player1_text.get_width()/2, 20))
+    window.blit(player2_text, (window_width*3/4 - player2_text.get_width()/2, 20))
+    
+    # Update the display
+    pygame.display.flip()
+
+# Clean up
+pygame.quit()
